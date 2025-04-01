@@ -1,0 +1,82 @@
+segunda tarea de programación requerirá que escriba una función R es capaz de almacenar en caché cálculos que pueden consumir mucho tiempo. Por ejemplo, calcular la media de un vector numérico suele ser una operación rápida. Sin embargo, para un vector muy largo, puede llevar demasiado tiempo calcular la media, especialmente si tiene que calcularse repetidamente (por ejemplo, en un bucle). Si el contenido de un vector no cambia, puede tener sentido almacenar en caché el valor de la media para que, cuando volvamos a necesitarlo, se pueda buscar en la caché en lugar de volver a calcularlo. En esta asignación de programación aprovecharemos las reglas de alcance del lenguaje R y cómo pueden manipularse para preservar el estado dentro de un objeto R.
+
+```{r}
+# Esta función crea un objeto especial que puede almacenar un vector y la media en caché
+makeVector <- function(x = numeric()) {
+  m <- NULL  # Aquí se guardará la media
+  
+  set <- function(y) {
+    x <<- y        # Guarda el nuevo vector
+    m <<- NULL     # Invalida la media anterior (porque el vector ha cambiado)
+  }
+  
+  get <- function() x            # Devuelve el vector
+  setmean <- function(mean) m <<- mean  # Guarda la media calculada
+  getmean <- function() m        # Devuelve la media si ya ha sido calculada
+  
+  list(set = set,
+       get = get,
+       setmean = setmean,
+       getmean = getmean)
+}
+
+# Esta función calcula (o recupera de la caché) la media del vector especial creado
+cachemean <- function(x, ...) {
+  m <- x$getmean()
+  if (!is.null(m)) {
+    message("Obteniendo la media desde la caché")
+    return(m)
+  }
+  data <- x$get()
+  m <- mean(data, ...)  # Calcula la media
+  x$setmean(m)          # La guarda en caché
+  m
+}
+```
+
+La inversión de matrices suele ser un cálculo costoso y puede resultar ventajoso almacenar en caché la inversa de una matriz en lugar de calcularla repetidamente (también existen alternativas a la inversión de matrices que no trataremos aquí). Su tarea consiste en escribir un par de funciones que almacenen en caché la inversa de una matriz.
+
+Escriba las siguientes funciones:
+
+1.  makeCacheMatrix: Esta función crea un objeto "matriz" especial que puede almacenar en caché su inversa.
+
+2.  cacheSolve: Esta función calcula la inversa de la "matriz" especial devuelta por makeCacheMatrix anteriormente. Si la inversa ya ha sido calculada (y la matriz no ha cambiado), entonces cacheSolve debe recuperar la inversa de la caché.
+
+Calcular la inversa de una matriz cuadrada puede hacerse con la función solve de R. Por ejemplo, si X es una matriz cuadrada invertible, entonces solve(X) devuelve su inversa.
+
+Para esta tarea, suponga que la matriz suministrada es siempre invertible.
+
+```{r}
+# Esta función crea un "objeto" especial que puede almacenar una matriz y su inversa
+makeCacheMatrix <- function(x = matrix()) {
+  inv <- NULL  # Aquí se guardará la inversa
+
+  set <- function(y) {
+    x <<- y
+    inv <<- NULL  # Invalida la inversa si la matriz cambia
+  }
+
+  get <- function() x               # Devuelve la matriz
+  setinverse <- function(inversa) inv <<- inversa  # Guarda la inversa en caché
+  getinverse <- function() inv      # Devuelve la inversa si ya se ha calculado
+
+  list(set = set,
+       get = get,
+       setinverse = setinverse,
+       getinverse = getinverse)
+}
+
+# Esta función calcula (o recupera) la inversa de la matriz especial
+cacheSolve <- function(x, ...) {
+  inv <- x$getinverse()
+  if (!is.null(inv)) {
+    message("Obteniendo la inversa desde la caché")
+    return(inv)
+  }
+
+  mat <- x$get()
+  inv <- solve(mat, ...)  # Calcula la inversa usando solve()
+  x$setinverse(inv)       # La guarda en caché
+  inv
+}
+```
